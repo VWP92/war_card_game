@@ -7,10 +7,14 @@
 #include <algorithm>
 #include <cstdlib>
 #include <ctime>
+#include <fstream>
 
 int playerCounter = 0; //Counts element position in playerDeck vector, reset when deck is shuffled 
 int pcCounter = 0; //Counts element position in pcDeck vector, reset when deck is shuffled
 int roundNum = 1; //Tracks number of rounds done in game
+ofstream oScoreFile; //input/output streams for score.txt
+ifstream iScoreFile;
+string score;
 
 
 int randomNum(int i)//function to generate random integer
@@ -18,6 +22,57 @@ int randomNum(int i)//function to generate random integer
 	return rand() % i;
 }
 
+void pplayerScore() // Prints player score from previous game to screen
+{
+	iScoreFile.open("score.txt");
+	if (iScoreFile.is_open())
+	{
+		while (true)
+		{
+			iScoreFile >> score;
+			if (iScoreFile.eof()) break; //Avoid repetition of last word
+			cout << score << " ";
+		}
+		cout << endl;
+	}
+	else
+	{
+		cout << "ERROR: Score file not available." << endl;
+		ofstream oScoreFile("score.txt");
+		cout << "FILE CREATED" << endl;
+	}
+	iScoreFile.close();
+}
+
+void fupdatePlayerWin() //Records player's win
+{
+	oScoreFile.open("score.txt");
+	if (oScoreFile.is_open())
+	{
+		ofstream oScoreFile("score.txt");
+		oScoreFile << "Player Won Last Game at " << roundNum << " Rounds." << endl;
+	}
+	else
+	{
+		cout << "ERROR: Score file not available." << endl;
+	}
+	oScoreFile.close(); 
+}
+
+void fupdatePlayerLose() //Records player's lose
+{
+	oScoreFile.open("score.txt");
+	if (oScoreFile.is_open())
+	{
+		ofstream oScoreFile("score.txt");
+		oScoreFile << "Player Lost Last Game." << endl;
+	}
+	else
+	{
+		cout << "ERROR: Score file not available." << endl;
+	}
+	oScoreFile.close();
+}
 
 
 void war(vector<Cards> &x, vector<Cards> &y, vector<Cards> &j, vector<Cards> &k) //War method begin
@@ -57,6 +112,7 @@ void war(vector<Cards> &x, vector<Cards> &y, vector<Cards> &j, vector<Cards> &k)
 		int pcDeckSize = y.size(); //Holds size() of vector as signed integer since size() unsigned
 		if (playerDeckSize - 4 * loopCount < 0)
 		{
+			fupdatePlayerLose();
 			cout << endl << "****Player has lost the game!****";
 			cin.get();
 			cin.get();
@@ -64,6 +120,7 @@ void war(vector<Cards> &x, vector<Cards> &y, vector<Cards> &j, vector<Cards> &k)
 		}
 		else if (pcDeckSize - 4 * loopCount < 0)
 		{
+			fupdatePlayerWin();
 			cout << endl << "****PC has lost the game!****";
 			cin.get();
 			cin.get();
@@ -223,6 +280,7 @@ int main()
 	while (true) //Game!
 	{
 		cout << "WAR CARD GAME" << endl; //Begin game
+		pplayerScore();
 		cout << "Ready to play? (y/n): ";
 		cin >> choices;
 		choice = choices.at(0);
@@ -239,6 +297,7 @@ int main()
 			gameplay(playerDeck, pcDeck, gainedPlayerDeck, gainedPCDeck);
 			if (playerDeck.size() + gainedPlayerDeck.size() <= 0) //If player loses game
 			{
+				fupdatePlayerLose();
 				cout << endl << "****Player has lost the game!****";
 				cin.get();
 				cin.get();
@@ -246,6 +305,7 @@ int main()
 			}
 			else if (pcDeck.size() + gainedPCDeck.size() <= 0) //If PC loses game
 			{
+				fupdatePlayerWin();
 				cout << endl << "****PC has lost the game!****";
 				cin.get();
 				cin.get();
